@@ -1,6 +1,13 @@
 <?php
 
 namespace App\Providers;
+use App\User;
+use App\Product;
+use App\Category;
+use App\Observers\UserObserver;
+use App\Observers\ProductObserver;
+use App\Observers\CategoryObserver;
+
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Auth\Events\Registered;
@@ -29,6 +36,8 @@ class EventServiceProvider extends ServiceProvider
     {
         parent::boot();
 
-        //
+        User::observe(UserObserver::class);
+        Product::observe(ProductObserver::class);
+        Category::observe(CategoryObserver::class);
     }
 }

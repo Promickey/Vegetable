@@ -1,6 +1,7 @@
 <?php
 
 use Faker\Generator as Faker;
+use App\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,11 +15,27 @@ use Faker\Generator as Faker;
 */
 
 $factory->define(App\User::class, function (Faker $faker) {
+	
+	$gender = $faker->randomElement(['male', 'female']);
+    
+    $directory='public/images/avatars';
+    if (!File::isDirectory($directory)) {
+
+       $result = File::makeDirectory($directory, 0775, true);
+    }
+
     return [
-        'name' => $faker->name,
         'email' => $faker->unique()->safeEmail,
-        'email_verified_at' => now(),
-        'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
+        'username' => $faker->unique()->userName,
+        'password' => bcrypt($faker->password),
+        'first_name' => $faker->firstName($gender),
+        'avatar' => 'images/avatars/'.$faker->image('public/images/avatars',300,300, null, false) ,
+        'gender' => $gender,
+        'dob' => $faker->date($format = 'Y-m-d', $min = '-40 years', $max = '-10 years'),
+        'phone'=> $faker->phoneNumber,
+        'address' => $faker->address,
+        'role_id' => 2,
+        'status' => 1,
         'remember_token' => str_random(10),
     ];
 });

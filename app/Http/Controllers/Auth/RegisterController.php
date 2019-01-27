@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use App\Http\Requests\RegisterRequest;
+use Illuminate\Support\Facades\Mail;
 
 class RegisterController extends Controller
 {
@@ -51,7 +53,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'password' => ['required', 'string', 'min:5', 'confirmed'],
         ]);
     }
 
@@ -69,4 +71,42 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
         ]);
     }
+
+    public function register(RegisterRequest $request){    
+        $data = $request->except('password_confirmation');
+        $confirmation_code = str_random(30);
+        $data['role_id'] = 2;
+        $data['password'] = bcrypt($request->password);
+        $data['confirmation_code'] = $confirmation_code;
+        $user = User::create($data)->toArray();
+        Mail::send('email.activation', $user, function($message) use($user){
+            $message->to($user['email']);
+            $message->subject('Vegetable.com - Xác nhận tài khoản email');
+        });
+        //session(['success'=>'Register success! We sent activation code, please check your email.']);
+        return redirect()->to('login')->with('success', 'Register success! We sent activation code, please check your email.');
+
+    }
+
+    public function verify($code){
+        $user = User::where('confirmation_code', $code);
+        if (!is_null($user)) {
+            $user->update(['status' =>1, 'confirmation_code'=>null]);
+            $notification = "Great! You are verified success!";
+        }
+        else{
+            $notification = "Your confirmation code is invalid";
+        }
+        return redirect()->route('login')->with('status', $notification);
+    }
+
+
+
+
+
+
+
+
+
+
 }

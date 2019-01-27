@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -36,4 +37,15 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    public function authenticated(Request $request, $user){
+        if(!$user->status){
+            auth()->logout();
+            return back()->with('danger', 'Bạn cần phải xác minh tài khoản của mình. Chúng tôi đã gởi mã xác nhận đến email của bạn, vui lòng kiếm tra email của bạn!');
+        }
+        return redirect()->intended($this->redirectPath());
+
+    }
+
+    
 }
